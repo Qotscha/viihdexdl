@@ -4,7 +4,8 @@ setup(
     name = 'viihdexdl',
     description = 'Command line tool for downloading HLS streams with FFmpeg',
     long_description = 'ViihdexDL is a commmand line tool for downloading HLS streams with multiple audio and subtitle streams using FFmpeg. User can select the audio and subtitle tracks to download using language codes.',
-    version = '0.13.4',
+    url = 'https://github.com/Qotscha/viihdexdl',
+    version = '0.14',
     packages = ['viihdexdl'],
     package_dir = {'viihdexdl': 'src'},
     install_requires = [
