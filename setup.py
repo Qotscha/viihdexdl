@@ -1,11 +1,15 @@
 from setuptools import setup
+from pathlib import Path
+this_directory = Path(__file__).parent
+long_description = (this_directory / "README.md").read_text()
 
 setup(
     name = 'viihdexdl',
     description = 'Command line tool for downloading HLS streams with FFmpeg',
-    long_description = 'ViihdexDL is a commmand line tool for downloading HLS streams with multiple audio and subtitle streams using FFmpeg. User can select the audio and subtitle tracks to download using language codes.',
+    long_description = long_description,
+    long_description_content_type='text/markdown',
     url = 'https://github.com/Qotscha/viihdexdl',
-    version = '0.14',
+    version = '0.14.1',
     packages = ['viihdexdl'],
     package_dir = {'viihdexdl': 'src'},
     install_requires = [
