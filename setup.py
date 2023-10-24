@@ -10,7 +10,7 @@ setup(
     long_description_content_type='text/markdown',
     url = 'https://github.com/Qotscha/viihdexdl',
     author = 'Qotscha',
-    version = '0.15',
+    version = '0.15.1',
     packages = ['viihdexdl'],
     package_dir = {'viihdexdl': 'src'},
     install_requires = [

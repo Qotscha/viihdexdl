@@ -7,9 +7,9 @@ A command line tool for downloading HLS streams with multiple audio and subtitle
 
 [FFmpeg](https://www.ffmpeg.org) is needed to download streams.
 ## Installation
-Use pip to install ViihdeCLI and dependencies
+Use pip to install ViihdexDL and its dependencies.
 ```
-pip install --extra-index-url https://test.pypi.org/simple/ -U viihdexdl
+pip install -U viihdexdl
 ```
 ## Usage
 ```
