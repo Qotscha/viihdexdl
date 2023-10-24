@@ -9,7 +9,8 @@ setup(
     long_description = long_description,
     long_description_content_type='text/markdown',
     url = 'https://github.com/Qotscha/viihdexdl',
-    version = '0.14.1',
+    author = 'Qotscha',
+    version = '0.15',
     packages = ['viihdexdl'],
     package_dir = {'viihdexdl': 'src'},
     install_requires = [
@@ -25,8 +26,8 @@ setup(
         'Development Status :: 3 - Alpha',
         'Environment :: Console',
         'Environment :: Win32 (MS Windows)',
-        'Operating System :: Microsoft :: Windows',
         'License :: OSI Approved :: MIT License',
+        'Operating System :: Microsoft :: Windows',
         'Programming Language :: Python :: 3'
         ]
     )
