@@ -20,6 +20,7 @@
 
 import argparse
 import configparser
+import locale
 import os
 import platform
 from subprocess import Popen
@@ -123,6 +124,7 @@ def create_config(config_path):
     return config
 
 def main():
+    finnish = bool(locale.getlocale()[0].split('_')[0] == 'Finnish')
     # Read arguments
     parser = argparse.ArgumentParser(description='Download HLS streams.')
     parser.add_argument('url', metavar='URL', help='stream URL')
@@ -223,12 +225,18 @@ def main():
                     av_subs.append(lang)
                     sub_dict[lang] = ' -i \"' + sub_uri + '\"'
         if not sub_dict:
-            print('Tekstityksiä ei löytynyt.')
+            if finnish:
+                print('Tekstityksiä ei löytynyt.')
+            else:
+                print('No subtitles found.')
         else:
             sub = list_tracks(av_subs, wanted_subs, default_sub_list, True)[0][0]
             complete_filename = filename + '.' + get_iso(sub, to_iso, iso) + '.srt'
             sub_cmd = 'ffmpeg ' + dl_settings['ffmpeg options'] + sub_dict[sub] + ' -c:s subrip \"' + complete_filename + '\"'
-            print('Aloitetaan tekstityksen ' + complete_filename + ' lataus.\n')
+            if finnish:
+                print('Aloitetaan tekstityksen \033[32m' + complete_filename + '\033[39m lataus.\n')
+            else:
+                print('Starting downloading subtitle \033[32m' + complete_filename + '\033[39m.\n')
             Popen(sub_cmd).wait()
 
     else:
@@ -322,7 +330,10 @@ def main():
                                 complete_filename = filename + '.' + y[2] + '.(' + str(dl[y[2]]) + ')' + '.srt'
                                 dl[y[2]] += 1
                         sub_cmd = 'ffmpeg ' + dl_settings['ffmpeg options'] + y[0] + ' -c:s subrip \"' + complete_filename + '\"'
-                        print('Aloitetaan tekstityksen \033[32m' + complete_filename + '\033[39m lataus.\n')
+                        if finnish:
+                            print('Aloitetaan tekstityksen \033[32m' + complete_filename + '\033[39m lataus.\n')
+                        else:
+                            print('Starting downloading subtitle \033[32m' + complete_filename + '\033[39m.\n')
                         if args.verbose:
                             print(sub_cmd)
                             print()
@@ -352,16 +363,31 @@ def main():
                 + audio_metadata + sub_metadata + ' \"' + filename + '.' + dl_settings['file extension'] + '\"' )
 
     # Launch FFmpeg
-        print('Aloitetaan tallenteen \033[92m' + filename + '.' + dl_settings['file extension'] + '\033[39m lataus.')
-        if not audio_list:
-            print('Ladattava ääniraita: (nimetön)')
+        if finnish:
+            print('Aloitetaan tallenteen \033[92m' + filename + '.' + dl_settings['file extension'] + '\033[39m lataus.')
         else:
-            print('Ladattavat ääniraidat: ' + ', '.join([get_iso(x, to_iso, iso) for x in audio_list]))
+            print('Starting downloading \033[92m' + filename + '.' + dl_settings['file extension'] + '\033[39m.')
+        if not audio_list:
+            if finnish:
+                print('Ladattava ääniraita: (nimetön)')
+            else:
+                print('Audio track to download: (undefined)')
+        else:
+            if finnish:
+                print('Ladattavat ääniraidat: ' + ', '.join([get_iso(x, to_iso, iso) for x in audio_list]))
+            else:
+                print('Audio tracks to download: ' + ', '.join([get_iso(x, to_iso, iso) for x in audio_list]))
         if not ext_subs:
             if not sub_tracks:
-                print('Ei tekstityksiä')
+                if finnish:
+                    print('Ei tekstityksiä')
+                else:
+                    print('No subtitles')
             else:
-                print('Ladattavat tekstitysraidat: ' + ', '.join([get_iso(x, to_iso, iso) for x in sub_list]))
+                if finnish:
+                    print('Ladattavat tekstitysraidat: ' + ', '.join([get_iso(x, to_iso, iso) for x in sub_list]))
+                else:
+                    print('Subtitle tracks to download: ' + ', '.join([get_iso(x, to_iso, iso) for x in sub_list]))
         print()
         if args.verbose:
             print(cmd)
