@@ -160,7 +160,7 @@ def main():
     recording_url = args.url
     filename = args.filename
     sub_only = args.subonly
-    ext_subs = args.extsubs
+    ext_subs = args.extsubs if args.extsubs else dl_settings.getboolean('external subtitles')
     if dl_settings.getboolean('overwrite') or args.overwrite:
         dl_settings['ffmpeg options'] = dl_settings['ffmpeg options'] + ' ' + '-y'
     if dl_settings.getboolean('never overwrite') or args.never:
