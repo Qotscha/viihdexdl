@@ -156,6 +156,10 @@ def main():
         config = configparser.ConfigParser()
         config.read(args.config)
     dl_settings = config['Download settings']
+    if not 'Request headers' in config:
+        config['Headers'] = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:124.0) Gecko/20100101 Firefox/124.0'}
+    headers = config['Headers']
+    ffmpeg_ua = f' -user_agent "{headers['User-Agent']}"' if headers.get('User-Agent') else ''
 
     recording_url = args.url
     filename = args.filename
@@ -186,7 +190,7 @@ def main():
         filename = filename[:-4]
 
     # Download HLS master playlist
-    get_playlist = requests.get(recording_url)
+    get_playlist = requests.get(recording_url, headers = headers)
 
     # Parse playlist and create FFmpeg command
     playlist_lines = get_playlist.text.splitlines()
@@ -227,7 +231,7 @@ def main():
                             hls_url_ = hls_url_.rsplit('/', 1)[0]
                         sub_uri = hls_url_ + '/' + sub_uri
                     av_subs.append(lang)
-                    sub_dict[lang] = ' -i \"' + sub_uri + '\"'
+                    sub_dict[lang] = ffmpeg_ua + ' -i \"' + sub_uri + '\"'
         if not sub_dict:
             if finnish:
                 print('Tekstityksiä ei löytynyt.')
@@ -293,9 +297,9 @@ def main():
                     sub_uri = hls_url_ + '/' + sub_uri
                 if not lang_in_langs(lang, av_subs):
                     av_subs.append(lang)
-                    sub_dict[lang] = [(' -i \"' + sub_uri + '\"', is_hi_sub(n), get_iso(lang, to_iso, iso))]
+                    sub_dict[lang] = [(ffmpeg_ua + ' -i \"' + sub_uri + '\"', is_hi_sub(n), get_iso(lang, to_iso, iso))]
                 else:
-                    sub_dict[lang].append((' -i \"' + sub_uri + '\"', is_hi_sub(n), get_iso(lang, to_iso, iso)))
+                    sub_dict[lang].append((ffmpeg_ua + ' -i \"' + sub_uri + '\"', is_hi_sub(n), get_iso(lang, to_iso, iso)))
 
         # Create FFmpeg command
         if not av_audio:
@@ -366,7 +370,7 @@ def main():
             sub_codec = ' -c:s mov_text'
         else:
             sub_codec = ' -c:s subrip'
-        cmd = ( 'ffmpeg ' + dl_settings['ffmpeg options'] + ' -i \"' + recording_url + '\"' + sub_inputs + mappings + sub_mappings
+        cmd = ( 'ffmpeg ' + dl_settings['ffmpeg options'] + ffmpeg_ua + ' -i \"' + recording_url + '\"' + sub_inputs + mappings + sub_mappings
                 + ' -c:v ' + dl_settings['ffmpeg video codec'] + ' -c:a ' + dl_settings['ffmpeg audio codec'] + sub_codec
                 + audio_metadata + sub_metadata + ' \"' + filename + '.' + dl_settings['file extension'] + '\"' )
 
