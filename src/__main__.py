@@ -191,7 +191,7 @@ def main():
     # Parse playlist and create FFmpeg command
     playlist_lines = get_playlist.text.splitlines()
     recording_url = get_playlist.url
-    hls_url = recording_url.rsplit('/',1)[0]
+    hls_url = recording_url.rsplit('.m3u8', 1)[0].rsplit('/', 1)[0]
     av_audio = []
     audio_dict = {}
     audio_count = {}
@@ -221,7 +221,11 @@ def main():
                 if not lang_in_langs(lang, av_subs):
                     sub_uri = x.rsplit('URI=', 1)[1].split(',', 1)[0].strip('"')
                     if not (sub_uri.startswith('http://') or sub_uri.startswith('https://')):
-                        sub_uri = hls_url + '/' + sub_uri
+                        hls_url_ = hls_url
+                        while sub_uri.startswith('../'):
+                            sub_uri = sub_uri.split('/', 1)[1]
+                            hls_url_ = hls_url_.rsplit('/', 1)[0]
+                        sub_uri = hls_url_ + '/' + sub_uri
                     av_subs.append(lang)
                     sub_dict[lang] = ' -i \"' + sub_uri + '\"'
         if not sub_dict:
@@ -282,7 +286,11 @@ def main():
                 lang = get_language(l)
                 sub_uri = x.rsplit('URI=', 1)[1].split(',', 1)[0].strip('"')
                 if not (sub_uri.startswith('http://') or sub_uri.startswith('https://')):
-                    sub_uri = hls_url + '/' + sub_uri
+                    hls_url_ = hls_url
+                    while sub_uri.startswith('../'):
+                        sub_uri = sub_uri.split('/', 1)[1]
+                        hls_url_ = hls_url_.rsplit('/', 1)[0]
+                    sub_uri = hls_url_ + '/' + sub_uri
                 if not lang_in_langs(lang, av_subs):
                     av_subs.append(lang)
                     sub_dict[lang] = [(' -i \"' + sub_uri + '\"', is_hi_sub(n), get_iso(lang, to_iso, iso))]
