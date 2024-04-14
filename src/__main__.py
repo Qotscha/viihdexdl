@@ -99,29 +99,51 @@ def is_hi_sub(name):
     else:
         return False
 
-def create_config(config_path):
-    config = configparser.ConfigParser()
-    config['Download settings'] = { 'audio languages': '',
-                                    'subtitle languages': '',
-                                    'default audio': '',
-                                    'default subtitle': '',
-                                    'visual impaired': '',
-                                    'hearing impaired': '',
-                                    'maximum bandwidth': '0',
-                                    'file extension': 'mkv',
-                                    'external subtitles': 'true',
-                                    'RFC 5646 to ISO 639': 'true',
-                                    'ISO 639': 'alpha_3b',
-                                    'ffmpeg options': '-v error -stats',
-                                    'ffmpeg video codec': 'copy',
-                                    'ffmpeg audio codec': 'copy',
-                                    'overwrite': 'false',
-                                    'never overwrite': 'false' }
-    if not os.path.exists(config_path):
-        os.mkdir(config_path)
-    with open(os.path.join(config_path, 'settings.ini'), 'w') as configfile:
-        config.write(configfile)
-    return config
+def create_config(config_path, config = None, write_config = True):
+    config_changed = False
+    default_config = configparser.ConfigParser()
+    default_config['Download settings'] = { 'audio languages': '',
+                                            'subtitle languages': '',
+                                            'default audio': '',
+                                            'default subtitle': '',
+                                            'visual impaired': '',
+                                            'hearing impaired': '',
+                                            'maximum bandwidth': '0',
+                                            'file extension': 'mkv',
+                                            'external subtitles': 'true',
+                                            'RFC 5646 to ISO 639': 'true',
+                                            'ISO 639': 'alpha_3b',
+                                            'ffmpeg options': '-v error -stats',
+                                            'ffmpeg video codec': 'copy',
+                                            'ffmpeg audio codec': 'copy',
+                                            'overwrite': 'false',
+                                            'never overwrite': 'false' }
+    default_config['Headers'] = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:124.0) Gecko/20100101 Firefox/124.0'}
+    if not config:
+        config = default_config
+        config_changed = True
+    else:
+        if 'Download settings' in config:
+            for k in default_config['Download settings']:
+                if k in config['Download settings']:
+                    default_config['Download settings'][k] = config['Download settings'][k]
+                else:
+                    config_changed = True
+        else:
+            config_changed = True
+        if 'Headers' in config:
+            if not 'User-Agent' in config['Headers']:
+                config_changed = True
+            for k in config['Headers']:
+                default_config['Headers'][k] = config['Headers'][k]
+        else:
+            config_changed = True
+    if write_config and config_changed:
+        if not os.path.exists(config_path):
+            os.mkdir(config_path)
+        with open(os.path.join(config_path, 'settings.ini'), 'w') as configfile:
+            default_config.write(configfile)
+    return default_config
 
 def main():
     finnish = bool(locale.getlocale()[0].split('_')[0] == 'Finnish')
@@ -152,12 +174,12 @@ def main():
         else:
             config = configparser.ConfigParser()
             config.read(os.path.join(config_path, 'settings.ini'))
+            config = create_config(config_path, config)
     else:
         config = configparser.ConfigParser()
         config.read(args.config)
+        config = create_config(config_path, config, False)
     dl_settings = config['Download settings']
-    if not 'Request headers' in config:
-        config['Headers'] = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:124.0) Gecko/20100101 Firefox/124.0'}
     headers = config['Headers']
     ffmpeg_ua = f' -user_agent "{headers['User-Agent']}"' if headers.get('User-Agent') else ''
 
