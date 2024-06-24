@@ -25,6 +25,7 @@ Options include:
                       config file
 -s, --subonly         download subtitles only
 -e, --extsubs         download subtitles to external files
+-m, --muxsubs         mux subtitles to video file
 -a AUDIO LANGUAGES, --audio AUDIO LANGUAGES
                       audio languages, e.g. "fin, en"
 -u SUBTITLES, --subtitles SUBTITLES

@@ -155,6 +155,7 @@ def main():
     parser.add_argument('-c', '--config', help='config file', metavar='CONFIG FILE')
     parser.add_argument('-s', '--subonly', help='download subtitles only', action='store_true')
     parser.add_argument('-e', '--extsubs', help='download subtitles to external files', action='store_true')
+    parser.add_argument('-m', '--muxsubs', help='mux subtitles to video file', action='store_true')
     parser.add_argument('-a', '--audio', help='audio languages, e.g. \"fin, en\"', metavar='AUDIO LANGUAGES', default=None)
     parser.add_argument('-u', '--subtitles', help='subtitle languages', default=None)
     parser.add_argument('-b', '--begin', help='start live stream from the first segment', action='store_true')
@@ -187,6 +188,8 @@ def main():
     filename = args.filename
     sub_only = args.subonly
     ext_subs = args.extsubs if args.extsubs else dl_settings.getboolean('external subtitles')
+    if args.muxsubs:
+        ext_subs = False
     if dl_settings.getboolean('overwrite') or args.overwrite:
         dl_settings['ffmpeg options'] = dl_settings['ffmpeg options'] + ' ' + '-y'
     if dl_settings.getboolean('never overwrite') or args.never:
@@ -227,6 +230,7 @@ def main():
     sub_inputs = ''
     sub_mappings = ''
     sub_metadata = ' -default_mode infer_no_subs' if dl_settings['file extension'] == 'mkv' else ''
+    sub_string = ''
     # sub_metadata = ' -default_mode passthrough' if dl_settings['file extension'] == 'mkv' else ''
     wanted_audio = [] if not dl_settings['audio languages'] else [get_language(x.strip()) for x in dl_settings['audio languages'].split(',')]
     wanted_subs = [] if not dl_settings['subtitle languages'] else [get_language(x.strip()) for x in dl_settings['subtitle languages'].split(',')]
@@ -380,13 +384,17 @@ def main():
                         sub_inputs += y[0]
                         sub_mappings += ' -map ' + str(a+1) + ':s'
                         sub_metadata += ' -metadata:s:s:' + str(a) + ' language=' + y[2]
+                        sub_string += y[2]
                         if x in default_sub:
                             sub_metadata += ' -disposition:s:' + str(a) + ' default'
                             if y[1] or x == hearing_impaired:
                                 sub_metadata += '+hearing_impaired'
+                                sub_string += ' (HI)'
                         elif y[1] or x == hearing_impaired:
                             sub_metadata += ' -disposition:s:' + str(a) + ' hearing_impaired'
+                            sub_string += ' (HI)'
                         a += 1
+                        sub_string += ', '
 
         if dl_settings['file extension'] == 'mp4':
             sub_codec = ' -c:s mov_text'
@@ -419,9 +427,9 @@ def main():
                     print('No subtitles')
             else:
                 if finnish:
-                    print('Ladattavat tekstitysraidat: ' + ', '.join([get_iso(x, to_iso, iso) for x in sub_list]))
+                    print('Ladattavat tekstitysraidat: ' + sub_string[:-2])
                 else:
-                    print('Subtitle tracks to download: ' + ', '.join([get_iso(x, to_iso, iso) for x in sub_list]))
+                    print('Subtitle tracks to download: ' + sub_string[:-2])
         print()
         if args.verbose:
             print(cmd)
