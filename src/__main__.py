@@ -28,6 +28,14 @@ import requests
 import langcodes
 os.system('color')
 
+def is_best_variant(b, w, h, cb, mb, mw, mh):
+    if (mb and b > mb) or (mw and w > mw) or (mh and h > mh):
+        return False
+    elif b > cb:
+        return True
+    else:
+        return False
+
 def get_language(lang_code):
     lang = langcodes.Language.get(lang_code)
     return lang
@@ -109,6 +117,8 @@ def create_config(config_path, config = None, write_config = True):
                                             'visual impaired': '',
                                             'hearing impaired': '',
                                             'maximum bandwidth': '0',
+                                            'maximum width': '0',
+                                            'maximum height': '0',
                                             'file extension': 'mkv',
                                             'external subtitles': 'true',
                                             'RFC 5646 to ISO 639': 'true',
@@ -160,6 +170,9 @@ def main():
     parser.add_argument('-u', '--subtitles', help='subtitle languages', default=None)
     parser.add_argument('-b', '--begin', help='start live stream from the first segment', action='store_true')
     parser.add_argument('-l', '--live_start_index', help='start live stream from segment', default=None)
+    parser.add_argument('-mw', '--max_width', help='maximum video width in pixels', default=None)
+    parser.add_argument('-mh', '--max_height', help='maximum video height in pixels', default=None)
+    parser.add_argument('-mb', '--max_bitrate', help='maximum video bitrate (bps)', default=None)
     parser.add_argument('-r', '--variant', help='select variant', default=None)
     parser.add_argument('-y', '--overwrite', help='overwrite output files without asking', action='store_true')
     parser.add_argument('-n', '--never', help='never overwrite existing files', action='store_true')
@@ -239,8 +252,15 @@ def main():
     visual_impaired = None if (not dl_settings['visual impaired'] or dl_settings['file extension'] == 'mp4') else get_language(dl_settings['visual impaired'])
     hearing_impaired = None if (not dl_settings['hearing impaired'] or dl_settings['file extension'] == 'mp4') else get_language(dl_settings['hearing impaired'])
     variant = 0
+    for x in ['maximum bandwidth', 'maximum width', 'maximum height']:
+        if not dl_settings[x]:
+            dl_settings[x] = '0'
     max_bw = 0
-    max_dl_bw = 0 if not dl_settings['maximum bandwidth'] else int(dl_settings['maximum bandwidth'])
+    max_dl_bw = int(args.max_bitrate) if args.max_bitrate else int(dl_settings['maximum bandwidth'])
+    max_width = 0
+    max_dl_width = int(args.max_width) if args.max_width else int(dl_settings['maximum width'])
+    max_height = 0
+    max_dl_height = int(args.max_height) if args.max_height else int(dl_settings['maximum height'])
     if sub_only:
         cmd = ''
         for x in playlist_lines:
@@ -276,9 +296,12 @@ def main():
     else:
         for x in playlist_lines:
             # Parse available variants
-            if x.startswith('#EXT-X-STREAM-INF:'):
+            if x.startswith('#EXT-X-STREAM-INF:') and 'RESOLUTION' in x:
                 bandwidth = int(x.split('BANDWIDTH=', 1)[1].split(',', 1)[0])
-                if (not args.variant and (not max_dl_bw or bandwidth <= max_dl_bw) and bandwidth > max_bw) or (args.variant is not None and variant == int(args.variant)):
+                resolution = x.split('RESOLUTION=', 1)[1].split(',', 1)[0].split('x')
+                resolution = [int(y) for y in resolution]
+                if (args.variant is not None and variant == int(args.variant) or (not args.variant and
+                    is_best_variant(bandwidth, resolution[0], resolution[1], max_bw, max_dl_bw, max_dl_width, max_dl_height))):
                     best_variant = variant
                     try:
                         audio_tracks = True
@@ -291,6 +314,8 @@ def main():
                     except:
                         sub_tracks = False
                     max_bw = bandwidth
+                    max_width = resolution[0]
+                    max_height = resolution[1]
                 variant += 1
         mappings = ' -map 0:p:' + str(best_variant) + ':v'
 
@@ -409,6 +434,7 @@ def main():
             print('Aloitetaan tallenteen \033[92m' + filename + '.' + dl_settings['file extension'] + '\033[39m lataus.')
         else:
             print('Starting downloading \033[92m' + filename + '.' + dl_settings['file extension'] + '\033[39m.')
+        print(f'Video: {max_bw} bps, {max_width}x{max_height}')
         if not audio_list:
             if finnish:
                 print('Ladattava ääniraita: (nimetön)')
