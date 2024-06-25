@@ -1,0 +1,13 @@
+0.15 (2023-10-24)
+- Initial release
+
+0.15.1 (2023-10-24)
+- Fixed: readme
+
+0.16 (2024-06-25)
+- Added: user-agent can be configured
+- Added: command line switch to mux subtitles
+- Added: video resolution can be limited
+- Fixed: config to download external subtitles was ignored
+- Fixed: relative subtitle URIs were not always handled correctly
+- Improved: handling of incomplete config files
