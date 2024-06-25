@@ -33,6 +33,12 @@ Options include:
 -b, --begin           start live stream from the first segment
 -l LIVE_START_INDEX, --live_start_index LIVE_START_INDEX
                       start live stream from segment
+-mw MAX_WIDTH, --max_width MAX_WIDTH
+                      maximum video width in pixels
+-mh MAX_HEIGHT, --max_height MAX_HEIGHT
+                      maximum video height in pixels
+-mb MAX_BITRATE, --max_bitrate MAX_BITRATE
+                      maximum video bitrate (bps)
 -r VARIANT, --variant VARIANT
                       select variant
 -y, --overwrite       overwrite output files without asking
@@ -55,6 +61,8 @@ hearing impaired:     Language of the subtitle track for which 'hearing impaired
                       is set (onlyworks with .mkv files).
 maximum bandwidth:    The variant with the highest bitrate below this limit (bit/s) is downloaded.
                       If left empty or set to 0, the best variant is downloaded.
+maximum width:        Maximum width (pixels) for video.
+maximum height:       Maximum height (pixels) for video.
 file extension:       File extension of the output file. Use mkv (preferred) or mp4.
 external subtitles    Download subtitles to external files.
 rfc 5646 to iso 639:  Convert RFC 5646 language (e.g. nl-NL) tags to ISO 639-1/2 language codes.
