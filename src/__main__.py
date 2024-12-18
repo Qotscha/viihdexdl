@@ -23,10 +23,12 @@ import configparser
 import locale
 import os
 import platform
+import sys
 from subprocess import Popen
 import requests
 import langcodes
-os.system('color')
+if os.name == 'nt':
+    os.system('color')
 
 def is_best_variant(b, w, h, cb, mb, mw, mh):
     if (mb and b > mb) or (mw and w > mw) or (mh and h > mh):
@@ -150,7 +152,7 @@ def create_config(config_path, config = None, write_config = True):
             config_changed = True
     if write_config and config_changed:
         if not os.path.exists(config_path):
-            os.mkdir(config_path)
+            os.makedirs(config_path)
         with open(os.path.join(config_path, 'settings.ini'), 'w') as configfile:
             default_config.write(configfile)
     return default_config
@@ -180,8 +182,10 @@ def main():
     args = parser.parse_args()
 
     # Load config
-    if platform.system() == 'Windows':
+    if os.name == 'nt':
         config_path = os.path.join(os.environ['APPDATA'], 'viihdexdl')
+    elif os.name == 'posix' and sys.platform != 'darwin':
+        config_path = os.path.join(os.path.expanduser('~/.config'), 'viihdexdl')
     if not args.config:
         if not os.path.exists(os.path.join(config_path, 'settings.ini')):
             config = create_config(config_path)
@@ -400,7 +404,7 @@ def main():
                         if args.verbose:
                             print(sub_cmd)
                             print()
-                        Popen(sub_cmd).wait()
+                        Popen(sub_cmd, shell=True).wait()
                         print()
             else:
                 a = 0
@@ -460,7 +464,7 @@ def main():
         if args.verbose:
             print(cmd)
             print()
-        Popen(cmd).wait()
+        Popen(cmd, shell=True).wait()
 
 if __name__ == "__main__":
     main()

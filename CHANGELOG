@@ -11,3 +11,6 @@
 - Fixed: config to download external subtitles was ignored
 - Fixed: relative subtitle URIs were not always handled correctly
 - Improved: handling of incomplete config files
+
+0.17 (2024-12-18)
+- Added: UNIX support
